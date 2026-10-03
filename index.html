@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="FocusWord — ридер с последовательным показом слов и фиксированной опорной буквой." />
+    <meta name="theme-color" content="#f4f3ed" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-32x32.png" />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180x180.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <title>FocusWord — одно слово в фокусе</title>
+  </head>
+  <body>
+    <div class="scroll-progress" aria-hidden="true"></div>
+    <header class="site-header">
+      <a class="brand" href="#" aria-label="FocusWord"><img src="/FocusWord.png" width="260" height="87" alt="FocusWord" /></a>
+      <div class="header-actions">
+        <details id="language-menu" class="language-menu">
+          <summary aria-expanded="false">
+            <span class="control-label" data-i18n="language">Язык</span><span id="language-current">Русский</span><span aria-hidden="true">⌄</span>
+          </summary>
+          <div class="language-options" role="group" data-i18n-aria="language" aria-label="Язык">
+            <button type="button" data-language="en" lang="en" aria-pressed="false">English<span aria-hidden="true">EN</span></button>
+            <button type="button" data-language="es" lang="es" aria-pressed="false">Español<span aria-hidden="true">ES</span></button>
+            <button type="button" data-language="ru" lang="ru" aria-pressed="true">Русский<span aria-hidden="true">RU</span></button>
+          </div>
+        </details>
+        <details id="theme-menu" class="language-menu">
+          <summary aria-expanded="false">
+            <span class="control-label" data-i18n="theme">Тема</span><span id="theme-current">Системная</span><span aria-hidden="true">⌄</span>
+          </summary>
+          <div class="language-options" role="group" data-i18n-aria="theme" aria-label="Тема">
+            <button type="button" data-theme-choice="system" aria-pressed="true" data-i18n="system">Системная</button>
+            <button type="button" data-theme-choice="light" aria-pressed="false" data-i18n="light">Светлая</button>
+            <button type="button" data-theme-choice="dark" aria-pressed="false" data-i18n="dark">Тёмная</button>
+          </div>
+        </details>
+      </div>
+    </header>
+    <main>
+      <section class="intro" data-reveal>
+        <p class="eyebrow" data-i18n="eyebrow">ВАШ ТЕМП. ВАШ ТЕКСТ.</p>
+        <h1 data-i18n="headline">Читайте по одному слову.</h1>
+        <p data-i18n="intro">Держите букву в фокусе. Подберите удобный темп, ставьте на паузу и возвращайтесь к прочитанному.</p>
+      </section>
+      <section class="reader-panel" data-i18n-aria="reader" aria-label="Ридер">
+        <div class="panel-top">
+          <span class="eyebrow" data-i18n="tagline">Одно слово в фокусе</span><span class="reader-indicator" aria-hidden="true"></span>
+        </div>
+        <div class="stage" id="stage" role="img" aria-label="Вставьте текст">
+          <div class="word" aria-hidden="true"><span id="before"></span><span id="pivot">W</span><span id="after"></span></div>
+        </div>
+        <div class="progress-row"><span id="count">0 / 0</span><span id="status" role="status">Вставьте текст</span></div>
+        <label class="sr-only" for="progress" data-i18n="position">Позиция в тексте</label
+        ><input id="progress" type="range" min="0" max="0" value="0" disabled />
+        <div class="controls">
+          <button id="back" data-i18n-aria="back" aria-label="Предыдущее слово">←</button><button id="play" class="primary">Начать</button
+          ><button id="next" data-i18n-aria="next" aria-label="Следующее слово">→</button><button id="restart" data-i18n="restart">Сначала</button>
+        </div>
+        <p class="hint shortcuts" data-i18n="shortcuts">Пробел — начать / пауза · ← → — по одному слову</p>
+        <section class="settings" data-i18n-aria="settings" aria-label="Настройки чтения">
+          <div class="speed-setting">
+            <label for="speed" data-i18n="speed">Скорость, слов/мин</label>
+            <div class="speed-input">
+              <button id="speed-down" data-i18n-aria="speedDown" aria-label="Уменьшить скорость">−</button
+              ><input id="speed" type="number" min="60" max="1000" step="1" value="300" /><button
+                id="speed-up"
+                data-i18n-aria="speedUp"
+                aria-label="Увеличить скорость"
+              >
+                +
+              </button>
+            </div>
+            <input id="speed-range" type="range" min="60" max="1000" step="1" value="300" data-i18n-aria="speed" aria-label="Скорость, слов/мин" />
+            <p class="hint" data-i18n="liveSpeed">Меняйте темп во время чтения</p>
+          </div>
+          <label><span data-i18n="size">Шрифт, px</span><input id="size" type="number" min="20" max="80" value="48" /></label>
+          <label
+            ><span data-i18n="anchor">Опорная буква</span
+            ><select id="anchor">
+              <option value="third" data-i18n="third">Третья буква</option>
+              <option value="adaptive" data-i18n="adaptive">По длине слова</option>
+            </select></label
+          >
+          <label class="checkbox"><input id="punctuation" type="checkbox" checked /><span data-i18n="punctuation">Паузы на пунктуации</span></label>
+          <label class="checkbox"><input id="long-words" type="checkbox" checked /><span data-i18n="longWords">Паузы на длинных словах</span></label>
+        </section>
+      </section>
+      <section class="text-section" data-reveal>
+        <div class="section-heading">
+          <label for="text" data-i18n="text">Ваш текст</label><button id="example" data-i18n="example">Попробовать пример</button>
+        </div>
+        <textarea id="text" rows="7" placeholder="Вставьте текст для чтения…" spellcheck="false"></textarea>
+        <p class="hint" data-i18n="privacy">Изменение текста возвращает ридер к началу. Ваш текст остаётся в этой вкладке.</p>
+      </section>
+      <aside class="privacy-panel" data-reveal>
+        <span class="privacy-icon" aria-hidden="true">⌘</span>
+        <div>
+          <h2 data-i18n="privacyTitle">Ваш текст — на вашем устройстве</h2>
+          <p data-i18n="privacyDetails"></p>
+        </div>
+      </aside>
+      <section class="how-section" data-reveal>
+        <h2 data-i18n="how">Читайте в своём ритме</h2>
+        <p class="hint" data-i18n="howIntro">Подбирайте темп под текст, а не гонитесь за числом.</p>
+        <div class="how-grid">
+          <article>
+            <span class="step-number">01</span>
+            <h3 data-i18n="howOne">Настройте темп</h3>
+            <p data-i18n="howOneText">Меняйте скорость в любой момент. Пунктуация и длинные слова могут получать дополнительную паузу.</p>
+          </article>
+          <article>
+            <span class="step-number">02</span>
+            <h3 data-i18n="howTwo">Вернитесь к контексту</h3>
+            <p data-i18n="howTwoText">Поставьте на паузу и вернитесь к слову стрелками или ползунком. Полный текст остаётся ниже.</p>
+          </article>
+          <article>
+            <span class="step-number">03</span>
+            <h3 data-i18n="howThree">Держите под рукой</h3>
+            <p data-i18n="howThreeText">Добавьте FocusWord на домашний экран через браузер. Установленное приложение открывается в отдельном окне.</p>
+          </article>
+        </div>
+        <button id="install" class="primary" hidden data-i18n="install">Установить FocusWord</button>
+        <p class="hint install-help" data-i18n="installHelp">
+          Установка зависит от браузера. Найдите «Установить приложение» или «На экран Домой» в его меню. Работа без сети доступна после успешной загрузки
+          собранного приложения онлайн.
+        </p>
+        <p id="install-status" class="hint" role="status"></p>
+      </section>
+      <aside class="promo" data-reveal>
+        <div>
+          <p class="eyebrow">D9911.ORG</p>
+          <h2 data-i18n="promoTitle">Другие проекты Дениса</h2>
+          <p data-i18n="promoText">Посмотрите, над чем я ещё работаю, или напишите мне.</p>
+        </div>
+        <a href="https://d9911.org/" class="promo-link"><span data-i18n="promoLink">Перейти на d9911.org</span> ↗</a>
+      </aside>
+    </main>
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <img src="./favicon.svg" width="32" height="32" alt="" /><strong>FocusWord</strong>
+        <p data-i18n="noPromises">Без озвучки. Без обещаний скорочтения.</p>
+      </div>
+      <div class="footer-links">
+        <strong>Denis Gutsuliak</strong><a href="https://d9911.org/" data-i18n="site">Сайт</a><a href="https://t.me/d9911/">Telegram</a
+        ><a href="mailto:admin@d9911.org" data-i18n="contact">Написать</a>
+      </div>
+      <div class="legal">
+        <span>© 2024–<span id="copyright-year"></span> Denis Gutsuliak</span><a href="./LICENSE" data-i18n="license">Условия использования</a
+        ><span data-i18n="warranty">Без гарантий</span>
+      </div>
+    </footer>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

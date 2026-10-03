@@ -1,0 +1,49 @@
+{
+  "name": "focusword",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/d9911/FocusWord.git"
+  },
+  "author": {
+    "name": "Denis Gutsuliak (d9911.org)",
+    "email": "admin@d9911.org",
+    "url": "https://t.me/d9911/"
+  },
+  "contributors": [
+    {
+      "name": "Denis Gutsuliak",
+      "email": "admin@d9911.org",
+      "url": "https://t.me/d9911/"
+    }
+  ],
+  "license": "SEE LICENSE IN LICENSE",
+  "scripts": {
+    "dev": "node scripts/start.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "check": "npm run typecheck && npm test && npm run format:check",
+    "build": "npm run typecheck && node -e \"require('node:fs').copyFileSync('LICENSE', 'public/LICENSE')\" && vite build && node scripts/build-pwa.mjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "start": "node scripts/start.mjs",
+    "init": "node scripts/start.mjs --ensure-only"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "vite": "8.3.2",
+    "typescript": "7.0.2",
+    "prettier": "3.9.9"
+  },
+  "homepage": "https://github.com/d9911/FocusWord#readme",
+  "bugs": {
+    "url": "https://github.com/d9911/FocusWord/issues"
+  },
+  "description": "RSVP web reader with a fixed focal letter, built with TypeScript"
+}
