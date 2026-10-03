@@ -106,3 +106,14 @@ test('speed change replaces the pending interval and single-word text completes'
   assert.equal(s.reader.completed, true);
   assert.equal(s.reader.index, 0);
 });
+
+test('estimated total time includes reading delays and updates with speed and replacement text', () => {
+  const s = setup();
+  s.reader.load('мир мир, длинноеслово!');
+  // At 300 wpm: 200 + 300 + 500 = 1000 ms.
+  assert.equal(s.reader.estimatedMilliseconds, 1000);
+  s.reader.configure({ wpm: 600, punctuation: false, longWords: false });
+  assert.equal(s.reader.estimatedMilliseconds, 300);
+  s.reader.load('');
+  assert.equal(s.reader.estimatedMilliseconds, 0);
+});

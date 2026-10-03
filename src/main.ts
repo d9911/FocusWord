@@ -1,5 +1,7 @@
+import { readLocal, saveLocal } from './storage.ts';
 import './style.css';
 import { setupUI, t } from './ui.ts';
+import { setupDropdown } from './dropdown.ts';
 import { setupPWA } from './pwa.ts';
 import { Reader, splitWord } from './reader.ts';
 import type { AnchorMode } from './types/reader.ts';
@@ -16,7 +18,8 @@ const stage = element('stage');
 const speed = element<HTMLInputElement>('speed');
 const speedRange = element<HTMLInputElement>('speed-range');
 const size = element<HTMLInputElement>('size');
-const anchor = element<HTMLSelectElement>('anchor');
+const anchor = element<HTMLInputElement>('anchor');
+const sizeRange = element<HTMLInputElement>('size-range');
 const punctuation = element<HTMLInputElement>('punctuation');
 const longWords = element<HTMLInputElement>('long-words');
 const before = element('before');
@@ -28,6 +31,7 @@ const restart = element<HTMLButtonElement>('restart');
 const count = element('count');
 const status = element('status');
 
+let textSaved = true;
 const reader = new Reader(render);
 function render(): void {
   const word = reader.words[reader.index] ?? '';
@@ -46,6 +50,11 @@ function render(): void {
   back.disabled = !reader.words.length || reader.index === 0;
   next.disabled = !reader.words.length || reader.index === reader.words.length - 1;
   document.querySelector('.reader-panel')?.classList.toggle('playing', reader.playing);
+  element('anchor-current').textContent = t(anchor.value as AnchorMode);
+  const seconds = Math.ceil(reader.estimatedMilliseconds / 1000);
+  element('reading-time').textContent = `≈ ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+  element('reading-time').title = t('estimatedTime');
+  element('text-privacy').textContent = t(textSaved ? 'privacy' : 'privacyUnavailable');
   fitWord();
 }
 
@@ -57,6 +66,7 @@ function configure(): void {
   const wpm = Math.round(bounded(speed, 300));
   speed.value = speedRange.value = String(wpm);
   reader.configure({ wpm, punctuation: punctuation.checked, longWords: longWords.checked });
+  render();
 }
 function fitWord(): void {
   const requested = bounded(size, 48);
@@ -74,7 +84,11 @@ back.addEventListener('click', () => reader.seek(reader.index - 1));
 next.addEventListener('click', () => reader.seek(reader.index + 1));
 restart.addEventListener('click', () => reader.restart());
 progress.addEventListener('input', () => reader.seek(progress.valueAsNumber));
-text.addEventListener('input', () => reader.load(text.value));
+function loadUserText(): void {
+  textSaved = saveLocal('text', text.value);
+  reader.load(text.value);
+}
+text.addEventListener('input', loadUserText);
 speed.addEventListener('input', () => {
   if (Number.isFinite(speed.valueAsNumber) && speed.valueAsNumber >= 60 && speed.valueAsNumber <= 1000) configure();
 });
@@ -94,18 +108,60 @@ element('speed-up').addEventListener('click', () => {
 });
 punctuation.addEventListener('change', configure);
 longWords.addEventListener('change', configure);
-size.addEventListener('input', fitWord);
+size.addEventListener('input', () => {
+  sizeRange.value = String(bounded(size, 48));
+  fitWord();
+});
+sizeRange.addEventListener('input', () => {
+  size.value = sizeRange.value;
+  fitWord();
+});
+const sizeDrag = element<HTMLButtonElement>('size-drag');
+let dragY: number | undefined;
+let dragSize = 48;
+sizeDrag.addEventListener('pointerdown', (event) => {
+  if (event.button !== 0) return;
+  dragY = event.clientY;
+  dragSize = bounded(size, 48);
+  sizeDrag.setPointerCapture(event.pointerId);
+});
+sizeDrag.addEventListener('pointermove', (event) => {
+  if (dragY === undefined) return;
+  size.value = String(Math.max(20, Math.min(80, Math.round(dragSize + (dragY - event.clientY) / 2))));
+  sizeRange.value = size.value;
+  fitWord();
+});
+const endDrag = (): void => {
+  dragY = undefined;
+};
+sizeDrag.addEventListener('pointerup', endDrag);
+sizeDrag.addEventListener('pointercancel', endDrag);
+sizeDrag.addEventListener('lostpointercapture', endDrag);
+sizeDrag.addEventListener('keydown', (event) => {
+  if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+  event.preventDefault();
+  size.value = String(Math.max(20, Math.min(80, bounded(size, 48) + (event.key === 'ArrowUp' ? 1 : -1))));
+  sizeRange.value = size.value;
+  fitWord();
+});
+
 const normalizeSize = (): void => {
-  size.value = String(bounded(size, 48));
+  size.value = sizeRange.value = String(bounded(size, 48));
   fitWord();
 };
 size.addEventListener('change', normalizeSize);
 size.addEventListener('blur', normalizeSize);
-anchor.addEventListener('change', render);
+setupDropdown(element<HTMLDetailsElement>('anchor-menu'), '[data-anchor-choice]', (value) => {
+  anchor.value = value;
+  document
+    .querySelectorAll<HTMLButtonElement>('[data-anchor-choice]')
+    .forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.anchorChoice === value)));
+  render();
+});
 new ResizeObserver(fitWord).observe(stage);
 element('example').addEventListener('click', () => {
   text.value = t('exampleText');
-  reader.load(text.value);
+  loadUserText();
 });
 document.addEventListener('keydown', (event) => {
   const target = event.target;
@@ -129,5 +185,8 @@ render();
 
 if (new URLSearchParams(location.search).get('demo') === '1') {
   text.value = t('exampleText');
+  reader.load(text.value);
+} else {
+  text.value = readLocal('text') ?? '';
   reader.load(text.value);
 }

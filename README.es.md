@@ -15,6 +15,8 @@ Un lector sencillo que muestra una palabra a la vez. Pega un texto, elige tu rit
 
 ![FocusWord — application preview](docs/images/app.png)
 
+El tamaño de letra también se ajusta con un control deslizante o arrastrando verticalmente el botón ↕. El lector muestra el tiempo total aproximado con las pausas activadas.
+
 ## Lectura
 
 - Velocidad de 60–1000 palabras/min, ajustable durante la reproducción.
@@ -29,7 +31,7 @@ Requiere Node.js 24+ y npm. Sin framework, servidor de aplicación, base de dato
 
 ```sh
 make            # instalar si hace falta, iniciar y abrir el navegador
-make start      # igual que make
+make start      # igual que make (también make s / make S)
 make init       # instalar sin iniciar
 make dev        # comprobar dependencias, iniciar y abrir el navegador
 make check      # TypeScript, pruebas y formato
@@ -40,6 +42,8 @@ make screenshot # compilar y actualizar docs/images/app.png (Chrome local)
 ```
 
 El lanzador instala desde el lockfile cuando faltan dependencias o cambia la huella de instalación. Comprueba las versiones de las dependencias directas en cada inicio. El primer inicio crea la huella; los siguientes reutilizan la instalación. Se necesitan Node.js 24+, npm y GNU Make en PATH, también en Windows. Usa npm.cmd en Windows y npm en macOS/Linux. Sin Make: `npm start` o `npm run dev`. Vite abre el navegador; sin entorno gráfico, abre la URL indicada manualmente. La ejecución en Windows no se ha verificado localmente.
+
+`make`, `make start`, `make s` y `make S` instalan las dependencias si hace falta, compilan `dist/` e inician el servidor de desarrollo. `make dev` omite la compilación de producción. El inicio abre una página local que elimina solo el worker y la caché de FocusWord para esa URL y después abre el lector. El idioma y el tema se conservan.
 
 Define `CHROME_BIN` si Chrome/Chromium está instalado en otra ruta. La tarea usa un perfil temporal, un ejemplo en inglés y un servidor local. Las herramientas de captura no son necesarias para compilar normalmente.
 
@@ -57,7 +61,7 @@ El código fuente es TypeScript. `dist/` contiene JavaScript compilado y archivo
 
 ## Privacidad
 
-El texto permanece en la pestaña: la aplicación no lo envía a un servidor ni lo guarda en localStorage. No incluye analítica ni scripts de seguimiento. Solo guarda el idioma y el tema localmente; el service worker almacena archivos de la aplicación, no el texto. El alojamiento puede conservar registros de acceso. Los enlaces externos abren otros sitios; las insignias del README provienen de Shields.io y no forman parte de la aplicación.
+El texto se guarda en localStorage de este navegador y se restaura al recargar; la aplicación no lo envía a un servidor. No incluye analítica ni scripts de seguimiento. El idioma y el tema también se guardan localmente; borrar los datos del sitio los elimina junto con el texto. Borrar solo la caché HTTP/PWA no elimina localStorage; el service worker almacena archivos de la aplicación, no el texto. El alojamiento puede conservar registros de acceso. Los enlaces externos abren otros sitios; las insignias del README provienen de Shields.io y no forman parte de la aplicación.
 
 ## Notas
 

@@ -15,28 +15,40 @@
   <body>
     <div class="scroll-progress" aria-hidden="true"></div>
     <header class="site-header">
-      <a class="brand" href="#" aria-label="FocusWord"><img src="/FocusWord.png" width="260" height="87" alt="FocusWord" /></a>
+      <a class="brand" href="#" aria-label="FocusWord">
+        <svg class="brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <path d="M12 8H6v32h6M36 8h6v32h-6" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+          <path d="m15 16 5 17 4-11 4 11 5-17" stroke="var(--coral)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span>Focus<span class="brand-word">Word</span></span>
+      </a>
       <div class="header-actions">
-        <details id="language-menu" class="language-menu">
-          <summary aria-expanded="false">
-            <span class="control-label" data-i18n="language">Язык</span><span id="language-current">Русский</span><span aria-hidden="true">⌄</span>
-          </summary>
-          <div class="language-options" role="group" data-i18n-aria="language" aria-label="Язык">
-            <button type="button" data-language="en" lang="en" aria-pressed="false">English<span aria-hidden="true">EN</span></button>
-            <button type="button" data-language="es" lang="es" aria-pressed="false">Español<span aria-hidden="true">ES</span></button>
-            <button type="button" data-language="ru" lang="ru" aria-pressed="true">Русский<span aria-hidden="true">RU</span></button>
-          </div>
-        </details>
-        <details id="theme-menu" class="language-menu">
-          <summary aria-expanded="false">
-            <span class="control-label" data-i18n="theme">Тема</span><span id="theme-current">Системная</span><span aria-hidden="true">⌄</span>
-          </summary>
-          <div class="language-options" role="group" data-i18n-aria="theme" aria-label="Тема">
-            <button type="button" data-theme-choice="system" aria-pressed="true" data-i18n="system">Системная</button>
-            <button type="button" data-theme-choice="light" aria-pressed="false" data-i18n="light">Светлая</button>
-            <button type="button" data-theme-choice="dark" aria-pressed="false" data-i18n="dark">Тёмная</button>
-          </div>
-        </details>
+        <fieldset class="select-field">
+          <legend id="language-legend" data-i18n="language">Язык</legend>
+          <details id="language-menu" class="language-menu">
+            <summary aria-expanded="false" aria-labelledby="language-legend language-current">
+              <span id="language-current">Русский</span><span aria-hidden="true">⌄</span>
+            </summary>
+            <div class="language-options" role="group" data-i18n-aria="language" aria-label="Язык">
+              <button type="button" data-language="en" lang="en" aria-pressed="false">English<span aria-hidden="true">EN</span></button>
+              <button type="button" data-language="es" lang="es" aria-pressed="false">Español<span aria-hidden="true">ES</span></button>
+              <button type="button" data-language="ru" lang="ru" aria-pressed="true">Русский<span aria-hidden="true">RU</span></button>
+            </div>
+          </details>
+        </fieldset>
+        <fieldset class="select-field">
+          <legend id="theme-legend" data-i18n="theme">Тема</legend>
+          <details id="theme-menu" class="language-menu">
+            <summary aria-expanded="false" aria-labelledby="theme-legend theme-current">
+              <span id="theme-current">Системная</span><span aria-hidden="true">⌄</span>
+            </summary>
+            <div class="language-options" role="group" data-i18n-aria="theme" aria-label="Тема">
+              <button type="button" data-theme-choice="system" aria-pressed="true" data-i18n="system">Системная</button>
+              <button type="button" data-theme-choice="light" aria-pressed="false" data-i18n="light">Светлая</button>
+              <button type="button" data-theme-choice="dark" aria-pressed="false" data-i18n="dark">Тёмная</button>
+            </div>
+          </details>
+        </fieldset>
       </div>
     </header>
     <main>
@@ -52,7 +64,10 @@
         <div class="stage" id="stage" role="img" aria-label="Вставьте текст">
           <div class="word" aria-hidden="true"><span id="before"></span><span id="pivot">W</span><span id="after"></span></div>
         </div>
-        <div class="progress-row"><span id="count">0 / 0</span><span id="status" role="status">Вставьте текст</span></div>
+        <div class="progress-row">
+          <span id="count">0 / 0</span><span id="reading-time" aria-label="Приблизительное время чтения" data-i18n-aria="estimatedTime">≈ 0:00</span
+          ><span id="status" role="status">Вставьте текст</span>
+        </div>
         <label class="sr-only" for="progress" data-i18n="position">Позиция в тексте</label
         ><input id="progress" type="range" min="0" max="0" value="0" disabled />
         <div class="controls">
@@ -76,14 +91,27 @@
             <input id="speed-range" type="range" min="60" max="1000" step="1" value="300" data-i18n-aria="speed" aria-label="Скорость, слов/мин" />
             <p class="hint" data-i18n="liveSpeed">Меняйте темп во время чтения</p>
           </div>
-          <label><span data-i18n="size">Шрифт, px</span><input id="size" type="number" min="20" max="80" value="48" /></label>
-          <label
-            ><span data-i18n="anchor">Опорная буква</span
-            ><select id="anchor">
-              <option value="third" data-i18n="third">Третья буква</option>
-              <option value="adaptive" data-i18n="adaptive">По длине слова</option>
-            </select></label
-          >
+          <div class="size-setting">
+            <div class="size-label">
+              <label for="size" data-i18n="size">Шрифт, px</label
+              ><button id="size-drag" type="button" data-i18n-aria="dragFont" aria-label="Тяните вверх для увеличения шрифта, вниз для уменьшения">↕</button>
+            </div>
+            <input id="size" type="number" min="20" max="80" value="48" />
+            <input id="size-range" type="range" min="20" max="80" value="48" data-i18n-aria="size" aria-label="Шрифт, px" />
+          </div>
+          <fieldset class="select-field anchor-setting">
+            <legend id="anchor-legend" data-i18n="anchor">Опорная буква</legend>
+            <input id="anchor" type="hidden" value="third" />
+            <details id="anchor-menu" class="language-menu">
+              <summary aria-expanded="false" aria-labelledby="anchor-legend anchor-current">
+                <span id="anchor-current" data-i18n="third">Третья буква</span><span aria-hidden="true">⌄</span>
+              </summary>
+              <div class="language-options" role="group" data-i18n-aria="anchor" aria-label="Опорная буква">
+                <button type="button" data-anchor-choice="third" aria-pressed="true" data-i18n="third">Третья буква</button>
+                <button type="button" data-anchor-choice="adaptive" aria-pressed="false" data-i18n="adaptive">По длине слова</button>
+              </div>
+            </details>
+          </fieldset>
           <label class="checkbox"><input id="punctuation" type="checkbox" checked /><span data-i18n="punctuation">Паузы на пунктуации</span></label>
           <label class="checkbox"><input id="long-words" type="checkbox" checked /><span data-i18n="longWords">Паузы на длинных словах</span></label>
         </section>
@@ -93,7 +121,9 @@
           <label for="text" data-i18n="text">Ваш текст</label><button id="example" data-i18n="example">Попробовать пример</button>
         </div>
         <textarea id="text" rows="7" placeholder="Вставьте текст для чтения…" spellcheck="false"></textarea>
-        <p class="hint" data-i18n="privacy">Изменение текста возвращает ридер к началу. Ваш текст остаётся в этой вкладке.</p>
+        <p id="text-privacy" class="hint" data-i18n="privacy">
+          Изменение текста возвращает ридер к началу. Текст сохраняется локально в этом браузере и восстанавливается после перезагрузки.
+        </p>
       </section>
       <aside class="privacy-panel" data-reveal>
         <span class="privacy-icon" aria-hidden="true">⌘</span>

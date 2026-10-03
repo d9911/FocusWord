@@ -15,6 +15,8 @@ A simple word-by-word reader. Paste a text, choose your pace and keep the highli
 
 ![FocusWord — application preview](docs/images/app.png)
 
+Font size can also be changed with a slider or the vertical ↕ drag handle. The reader shows an estimated total time, including enabled word pauses.
+
 ## Reading
 
 - Adjustable speed: 60–1000 words/min, including during playback.
@@ -29,7 +31,7 @@ Requires Node.js 24+ and npm. No framework, backend, database or Docker.
 
 ```sh
 make            # install if needed, start and open the browser
-make start      # same as make
+make start      # same as make (aliases: make s / make S)
 make init       # install dependencies without starting
 make dev        # check dependencies, start and open the browser
 make check      # TypeScript, tests and formatting
@@ -40,6 +42,8 @@ make screenshot # build and update docs/images/app.png (local Chrome)
 ```
 
 The launcher installs from the lockfile when dependencies are missing or the installation fingerprint changes. It checks the direct dependency versions on each start. The first start initializes the fingerprint; subsequent starts reuse the installation. Requires Node.js 24+, npm and GNU Make on your PATH (including on Windows). The script uses npm.cmd on Windows and npm on macOS/Linux. Without Make, use `npm start` or `npm run dev`. Browser opening uses Vite; on a headless system, open the printed URL manually. Windows execution has not been verified locally.
+
+`make`, `make start`, `make s` and `make S` install dependencies if needed, build `dist/` and start the development server. `make dev` skips the production build. Startup opens a local reset page that removes only the FocusWord offline worker and cache for this URL, then opens the reader. Language and theme preferences are preserved.
 
 For screenshots, set `CHROME_BIN` if Chrome/Chromium is installed elsewhere. The task uses a temporary browser profile, an English demo and a local server. No screenshot tooling is required for normal builds.
 
@@ -57,7 +61,7 @@ TypeScript is the source. `dist/` contains compiled JavaScript and static assets
 
 ## Privacy
 
-Reading text stays in the tab: the app does not send it to a server or save it in local storage. There are no analytics or tracking scripts. Language and theme preferences are saved locally; the service worker caches app files, not reading text. Hosting providers may keep access logs. External links open other sites; README badges are served by Shields.io and are not included in the application.
+Reading text is saved in localStorage in this browser and restored after reload; the app does not send it to a server. There are no analytics or tracking scripts. Language and theme are also saved locally; clearing site data removes these values and the text. Clearing only the HTTP/PWA cache does not clear localStorage; the service worker caches app files, not reading text. Hosting providers may keep access logs. External links open other sites; README badges are served by Shields.io and are not included in the application.
 
 ## Notes
 

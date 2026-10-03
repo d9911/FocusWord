@@ -32,7 +32,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "start": "node scripts/start.mjs",
+    "start": "node scripts/start.mjs --build",
     "init": "node scripts/start.mjs --ensure-only"
   },
   "dependencies": {},

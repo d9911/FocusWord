@@ -33,11 +33,17 @@ export async function ensureDependencies(root) {
     return;
   }
   console.log('Installing dependencies from package-lock.json…');
+  await runNpm(['ci', '--include=dev'], root);
+  await writeFile(join(root, 'node_modules/.focusword-install.json'), JSON.stringify({ fingerprint: state.fingerprint }) + '\n');
+}
+
+export async function runNpm(args, root) {
   const windows = process.platform === 'win32';
-  const child = spawn(windows ? 'npm.cmd' : 'npm', ['ci', '--include=dev'], { cwd: root, stdio: 'inherit', shell: windows });
+  const child = spawn(windows ? 'npm.cmd' : 'npm', args, { cwd: root, stdio: 'inherit', shell: windows });
   await new Promise((done, reject) => {
     child.on('error', reject);
-    child.on('exit', (code, signal) => (code === 0 ? done() : reject(new Error(`npm ci failed (${signal ?? code}). Check Node.js, npm and network access.`))));
+    child.on('exit', (code, signal) =>
+      code === 0 ? done() : reject(new Error(`npm command failed (${signal ?? code}). Check Node.js, npm and network access.`)),
+    );
   });
-  await writeFile(join(root, 'node_modules/.focusword-install.json'), JSON.stringify({ fingerprint: state.fingerprint }) + '\n');
 }

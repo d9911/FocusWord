@@ -24,11 +24,16 @@ const clock: Clock = {
   clear: (id) => globalThis.clearTimeout(id as ReturnType<typeof setTimeout>),
 };
 
+export function estimateDuration(words: readonly string[], settings: Settings): number {
+  return words.reduce((total, word) => total + duration(word, settings), 0);
+}
+
 export class Reader {
   words: string[] = [];
   index = 0;
   playing = false;
   completed = false;
+  estimatedMilliseconds = 0;
   settings: Settings = { wpm: 300, punctuation: true, longWords: true };
   private timer: unknown;
 
@@ -43,6 +48,7 @@ export class Reader {
   load(text: string): void {
     this.cancel();
     this.words = tokenize(text);
+    this.estimatedMilliseconds = estimateDuration(this.words, this.settings);
     this.index = 0;
     this.completed = false;
     this.changed();
@@ -75,6 +81,7 @@ export class Reader {
 
   configure(settings: Settings): void {
     this.settings = settings;
+    this.estimatedMilliseconds = estimateDuration(this.words, settings);
     if (this.playing) {
       this.scheduler.clear(this.timer);
       this.schedule();

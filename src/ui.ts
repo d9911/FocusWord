@@ -1,3 +1,5 @@
+import { readLocal, saveLocal, resolveLanguage, resolveTheme } from './storage.ts';
+import { setupDropdown } from './dropdown.ts';
 import { en, es, ru } from './locales.ts';
 import type { Language, Theme, TranslationKey } from './types/ui.ts';
 
@@ -6,26 +8,11 @@ export const languageNames = { en: 'English', es: 'Español', ru: 'Русски�
 let language: Language = 'ru';
 export const t = (key: TranslationKey): string => translations[language][key];
 
-function readPreference(key: string): string | null {
-  try {
-    return localStorage.getItem(`focusword:${key}`);
-  } catch {
-    return null;
-  }
-}
-function savePreference(key: string, value: string): void {
-  try {
-    localStorage.setItem(`focusword:${key}`, value);
-  } catch {
-    /* Preferences still work when storage is unavailable. */
-  }
-}
 export function setupUI(changed: () => void): void {
   const requestedLanguage = new URLSearchParams(location.search).get('lang');
-  const stored = requestedLanguage && ['en', 'es', 'ru'].includes(requestedLanguage) ? requestedLanguage : readPreference('language');
-  const browserLanguage = navigator.language.slice(0, 2);
-  language =
-    stored && ['en', 'es', 'ru'].includes(stored) ? (stored as Language) : ['en', 'es', 'ru'].includes(browserLanguage) ? (browserLanguage as Language) : 'en';
+  const demo = new URLSearchParams(location.search).get('demo') === '1';
+  language = resolveLanguage(requestedLanguage ?? readLocal('language'), navigator.languages.length ? navigator.languages : [navigator.language]);
+  if (!demo) saveLocal('language', language);
   const dropdown = document.querySelector<HTMLDetailsElement>('#language-menu')!;
   const choices = Array.from(dropdown.querySelectorAll<HTMLButtonElement>('[data-language]'));
   function translate(): void {
@@ -46,12 +33,12 @@ export function setupUI(changed: () => void): void {
   }
   setupDropdown(dropdown, '[data-language]', (value) => {
     language = value as Language;
-    savePreference('language', language);
+    saveLocal('language', language);
     translate();
   });
   const themeMenu = document.querySelector<HTMLDetailsElement>('#theme-menu')!;
-  const preference = readPreference('theme');
-  let theme: Theme = preference === 'light' || preference === 'dark' ? preference : 'system';
+  let theme: Theme = resolveTheme(readLocal('theme'));
+  saveLocal('theme', theme);
   const systemTheme = matchMedia('(prefers-color-scheme: dark)');
   function applyTheme(): void {
     const effective = theme === 'system' ? (systemTheme.matches ? 'dark' : 'light') : theme;
@@ -64,7 +51,7 @@ export function setupUI(changed: () => void): void {
   }
   setupDropdown(themeMenu, '[data-theme-choice]', (value) => {
     theme = value as Theme;
-    savePreference('theme', theme);
+    saveLocal('theme', theme);
     applyTheme();
   });
   systemTheme.addEventListener('change', applyTheme);
@@ -72,7 +59,7 @@ export function setupUI(changed: () => void): void {
   translate();
 
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  if (!reducedMotion.matches && 'IntersectionObserver' in window) {
+  if (!demo && !reducedMotion.matches && 'IntersectionObserver' in window) {
     const observer = new IntersectionObserver(
       (entries) =>
         entries.forEach((entry) => {
@@ -107,40 +94,4 @@ export function setupUI(changed: () => void): void {
   addEventListener('resize', scrollProgress);
   scrollProgress();
   document.querySelector('#copyright-year')!.textContent = String(new Date().getFullYear());
-}
-
-function setupDropdown(menu: HTMLDetailsElement, selector: string, selected: (value: string) => void): void {
-  const summary = menu.querySelector('summary')!;
-  const choices = Array.from(menu.querySelectorAll<HTMLButtonElement>(selector));
-  choices.forEach((button) =>
-    button.addEventListener('click', () => {
-      selected(button.dataset.language ?? button.dataset.themeChoice ?? 'system');
-      menu.open = false;
-      summary.focus();
-    }),
-  );
-  menu.addEventListener('toggle', () => {
-    summary.setAttribute('aria-expanded', String(menu.open));
-    if (menu.open)
-      document.querySelectorAll<HTMLDetailsElement>('.language-menu').forEach((other) => {
-        if (other !== menu) other.open = false;
-      });
-  });
-  menu.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      menu.open = false;
-      summary.focus();
-    }
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      menu.open = true;
-      const index = choices.indexOf(document.activeElement as HTMLButtonElement);
-      const next =
-        index < 0 ? (event.key === 'ArrowDown' ? 0 : choices.length - 1) : (index + (event.key === 'ArrowDown' ? 1 : -1) + choices.length) % choices.length;
-      choices[next]?.focus();
-    }
-  });
-  document.addEventListener('click', (event) => {
-    if (event.target instanceof Node && !menu.contains(event.target)) menu.open = false;
-  });
 }
